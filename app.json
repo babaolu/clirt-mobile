@@ -1,25 +1,117 @@
 {
   "expo": {
-    "name": "clirt-mobile",
-    "slug": "clirt-mobile",
+    "name": "Clirt",
+    "slug": "clirt",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
+    "scheme": "clirt",
     "userInterfaceStyle": "light",
-    "ios": {
-      "supportsTablet": true
-    },
+    "backgroundColor": "#f5f7fb",
     "android": {
+      "package": "com.babaolu.clirt",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#1f2a5c",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    }
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-web-browser",
+      [
+        "expo-font",
+        {
+          "android": {
+            "fonts": [
+              {
+                "fontFamily": "Montserrat",
+                "fontDefinitions": [
+                  {
+                    "path": "./assets/fonts/Montserrat-800.ttf",
+                    "weight": 800
+                  }
+                ]
+              },
+              {
+                "fontFamily": "Playfair Display",
+                "fontDefinitions": [
+                  {
+                    "path": "./assets/fonts/PlayfairDisplay-700.ttf",
+                    "weight": 700
+                  }
+                ]
+              },
+              {
+                "fontFamily": "Pacifico",
+                "fontDefinitions": [
+                  {
+                    "path": "./assets/fonts/Pacifico-400.ttf",
+                    "weight": 400
+                  }
+                ]
+              },
+              {
+                "fontFamily": "Bungee",
+                "fontDefinitions": [
+                  {
+                    "path": "./assets/fonts/Bungee-400.ttf",
+                    "weight": 400
+                  }
+                ]
+              },
+              {
+                "fontFamily": "Space Mono",
+                "fontDefinitions": [
+                  {
+                    "path": "./assets/fonts/SpaceMono-400.ttf",
+                    "weight": 400
+                  },
+                  {
+                    "path": "./assets/fonts/SpaceMono-700.ttf",
+                    "weight": 700
+                  }
+                ]
+              },
+              {
+                "fontFamily": "Oswald",
+                "fontDefinitions": [
+                  {
+                    "path": "./assets/fonts/Oswald-600.ttf",
+                    "weight": 600
+                  }
+                ]
+              },
+              {
+                "fontFamily": "Bricolage Grotesque",
+                "fontDefinitions": [
+                  {
+                    "path": "./assets/fonts/BricolageGrotesque-800.ttf",
+                    "weight": 800
+                  }
+                ]
+              },
+              {
+                "fontFamily": "Instrument Sans",
+                "fontDefinitions": [
+                  {
+                    "path": "./assets/fonts/InstrumentSans-400.ttf",
+                    "weight": 400
+                  },
+                  {
+                    "path": "./assets/fonts/InstrumentSans-600.ttf",
+                    "weight": 600
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "./plugins/withReleaseSigning"
+    ]
   }
 }
