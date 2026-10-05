@@ -36,3 +36,52 @@ export type CartItem = {
 export type Cart = { items: CartItem[]; itemCount: number; subtotalKobo: number };
 
 export type User = { id: string; name: string; email: string; image: string | null };
+
+export type OrderStatus = 'pending' | 'confirmed' | 'cancelled';
+export type EmailStatus = 'pending' | 'sent' | 'failed';
+
+export type OrderSummary = {
+	id: string;
+	number: string;
+	createdAt: string;
+	status: OrderStatus;
+	emailStatus: EmailStatus;
+	totalKobo: number;
+	itemCount: number;
+};
+
+export type OrderItem = {
+	id: number;
+	styleName: string;
+	size: string;
+	quantity: number;
+	unitPriceKobo: number;
+	lineTotalKobo: number;
+	customization: Customization;
+	colorName: string;
+	designSummary: string;
+	previewSvg: string;
+};
+
+export type Order = Omit<OrderSummary, 'itemCount'> & {
+	subtotalKobo: number;
+	contactEmail: string;
+	shippingName: string;
+	phone: string;
+	address: string;
+	city: string;
+	state: string;
+	notes: string | null;
+	emailError: string | null;
+	items: OrderItem[];
+};
+
+export type CheckoutInput = {
+	contactEmail: string;
+	shippingName: string;
+	phone: string;
+	address: string;
+	city: string;
+	state: string;
+	notes: string;
+};

@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SvgXml } from 'react-native-svg';
 import { authClient } from '../lib/auth';
+import { takeFlash } from '../lib/flash';
 import { Button, Logo } from '../components/ui';
 import { colors, fonts } from '../theme';
 
@@ -11,6 +12,7 @@ const GOOGLE_G = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><p
 export default function SignIn() {
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [notice] = useState(takeFlash); // e.g. "Your Clirt account has been deleted."
 
 	async function continueWithGoogle() {
 		setBusy(true);
@@ -32,6 +34,11 @@ export default function SignIn() {
 				<Logo size={40} />
 			</View>
 			<View style={s.body}>
+				{notice && (
+					<View accessibilityRole="alert" style={s.notice}>
+						<Text style={s.noticeText}>{notice}</Text>
+					</View>
+				)}
 				<Text style={s.spec}>Custom tees · Printed in Nigeria</Text>
 				<Text style={s.title}>Say it on a tee.</Text>
 				<Text style={s.lead}>Sign in to design shirts and keep one cart across your phone and the web.</Text>
@@ -67,6 +74,8 @@ const s = StyleSheet.create({
 		textShadowRadius: 0.1
 	},
 	lead: { fontFamily: fonts.body, fontSize: 17, lineHeight: 25, color: colors.slate, marginTop: 14 },
+	notice: { backgroundColor: colors.leafSoft, borderRadius: 12, padding: 14, marginBottom: 24 },
+	noticeText: { fontFamily: fonts.body, fontWeight: '600', fontSize: 15, color: colors.leaf },
 	error: { fontFamily: fonts.body, color: colors.alert, marginTop: 18, fontSize: 15 },
 	small: { fontFamily: fonts.body, color: colors.slate, fontSize: 13, marginTop: 16, textAlign: 'center' }
 });

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Clirt",
     "slug": "clirt",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "clirt",
@@ -10,6 +10,7 @@
     "backgroundColor": "#f5f7fb",
     "android": {
       "package": "com.babaolu.clirt",
+      "versionCode": 2,
       "adaptiveIcon": {
         "backgroundColor": "#1f2a5c",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -22,6 +23,14 @@
       "expo-router",
       "expo-secure-store",
       "expo-web-browser",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#1f2a5c",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200
+        }
+      ],
       [
         "expo-font",
         {

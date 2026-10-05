@@ -1,11 +1,18 @@
 # Clirt for Android
 
-The Android app for **[Clirt](https://clirt-delta.vercel.app)**, the custom T-shirt shop for Nigeria. Sign in with the same Google account you use on the website, design a tee, and your cart stays in sync between the phone and the web in real time.
+The Android app for **[Clirt](https://clirt-delta.vercel.app)**, the custom T-shirt shop for Nigeria. Sign in with the same Google account you use on the website, design a tee, check out with pay on delivery, and track your orders. Your cart stays in sync between the phone and the web in real time.
 
 - Website: https://clirt-delta.vercel.app
 - Web and API repo: https://github.com/babaolu/clirt (see its README for the `/api/v1` reference)
+- Download the APK: [latest release](https://github.com/babaolu/clirt-mobile/releases/latest)
 
-Checkout and order history are on the website for now.
+<p>
+  <img src="docs/shop.png" width="200" alt="Shop">
+  <img src="docs/design.png" width="200" alt="Design screen with arched text">
+  <img src="docs/checkout.png" width="200" alt="Checkout form">
+  <img src="docs/orders.png" width="200" alt="Orders tab">
+  <img src="docs/account.png" width="200" alt="Account screen">
+</p>
 
 ## Features
 
@@ -17,9 +24,12 @@ Checkout and order history are on the website for now.
   - design size and position sliders
   - a live preview drawn on the phone with the same renderer the website uses
   - a live price
-- **Cart:** server-rendered previews, quantity −/+, remove, subtotal, pull to refresh, and a badge on the tab.
-- **Live sync:** add or change something on the website and the phone's cart updates within a second, and the other way round.
-- **Account:** your name, email and avatar, and sign out.
+- **Cart:** server-rendered previews, quantity −/+, remove, subtotal, pull to refresh, a badge on the tab, and a **Checkout** button.
+- **Checkout:** contact email and full name prefilled from your account, phone, address, city, a state picker (the 36 states + FCT), optional notes, and an order summary with previews and totals. Delivery is free and you pay on delivery; nothing is charged in the app. The API's per-field errors show under each field, your input is kept, and the button is locked while the order is placed, so a double tap can't create two orders.
+- **Orders:** every order (from the app or the website) with its number, date, item count, total, and status and email badges. The order screen shows the stored previews, items, delivery details and totals, plus **Resend confirmation email** when the email wasn't sent (the error is under **Details**).
+- **Live sync:** add or change something on the website and the phone's cart updates within seconds, without a refresh, and the other way round. Placing an order clears the cart and badge everywhere.
+- **Account:** your name, email and avatar, the privacy policy, sign out, and **Delete my account** (type DELETE to confirm). Deletion removes the account on the server, clears the session, stops live updates and returns to sign-in.
+- **Everywhere:** loading skeletons, error states with Retry, an offline notice, pull to refresh on Shop, Cart and Orders, and inputs that stay above the keyboard.
 
 ## Stack
 
@@ -28,6 +38,8 @@ Checkout and order history are on the website for now.
 - `react-native-svg` (`SvgXml`) to render SVG previews
 - `pusher-js` (React Native build) for live cart updates
 - `zod` for the shared customization schema
+- `expo-network` for the offline notice, `expo-web-browser` for Google sign-in and the privacy policy
+- `expo-splash-screen` and an adaptive icon in the brand colours: the website favicon's tee mark on indigo (`#1f2a5c`)
 
 ## How it works
 
@@ -54,23 +66,36 @@ Every API call goes through `api()` in `src/lib/api.ts`:
 - **Channel authorization:** a form-encoded `socket_id` and `channel_name` POST to `/api/v1/realtime/auth`, sent with the session cookie.
 - **When something changes:** after any cart change made anywhere (the website's forms, this app, or an order placed on the web), the server publishes `cart-updated` with `{ itemCount, at }`. The app updates the badge immediately and refetches `GET /api/v1/cart`.
 - **Safety net:** the cart is also refetched when the app returns to the foreground (`AppState`) and when the Cart tab gains focus.
-- **Sign out:** the app unsubscribes and disconnects.
+- **Sign out or account deletion:** the app unsubscribes and disconnects.
+
+Channel authorization sends JSON. Note that pusher-js 8's React Native bundle exports `{ Pusher }` with no default export, even though its typings declare one; `src/lib/cart.tsx` reads `.Pusher`.
 
 The Pusher key and cluster in `src/config.ts` are public values; they're the same ones the website sends to every browser.
 
 ### Shared code
 
-`src/shared/customization.ts`, `src/shared/shirt.ts` and `src/shared/money.ts` are copied from the web repo. Only their import paths differ, and each file names its source path and commit. When the web versions change, copy them again; the server re-validates and re-prices everything, so a stale copy can't produce a wrong price.
+`src/shared/customization.ts`, `src/shared/shirt.ts`, `src/shared/money.ts` and `src/shared/nigeria.ts` are copied from the web repo. Only their import paths differ, and each file names its source path and commit. When the web versions change, copy them again; the server re-validates and re-prices everything, so a stale copy can't produce a wrong price.
 
-`src/lib/svg.tsx` adapts the renderer's SVG for Android: `font-family="'Montserrat', sans-serif"` becomes `Montserrat`, because Android resolves a single family name. The design fonts are the web repo's latin-subset font files, converted to TTF and embedded with the `expo-font` config plugin under the same family names and weights the renderer uses (see `app.json`).
+`src/lib/svg.tsx` adapts the renderer's SVG for Android: `font-family="'Montserrat', sans-serif"` becomes `Montserrat`, because Android resolves a single family name. It also maps two text attributes that react-native-svg handles differently from browsers: `dominant-baseline` becomes `alignment-baseline` (so text is centred on its placement point), and `text-anchor` moves from `<textPath>` to its parent `<text>` (so arched text centres on the arc). The design fonts are the web repo's latin-subset font files, converted to TTF and embedded with the `expo-font` config plugin under the same family names and weights the renderer uses (see `app.json`).
+
+### Forms on Android
+
+Checkout's inputs use `Input` from `src/components/ui.tsx`, which works around three Android problems:
+
+- A single-line `TextInput` keeps a drag that starts on it, so the form wouldn't scroll. Inputs are rendered `multiline` with Enter submitting (and newlines stripped), plus a little spare height.
+- The native placeholder ignores the app font. It is drawn as an overlay `Text` instead.
+- With edge-to-edge, the window doesn't resize for the keyboard. `useKeyboardAwareScroll` (`src/lib/keyboard.ts`) pads the form by the keyboard height and scrolls the focused input above it.
 
 ## Develop
 
 ```sh
-npm install
+npm install --legacy-peer-deps
 npx expo run:android      # debug build on a connected device or emulator
 npm run typecheck
+npx expo-doctor
 ```
+
+`--legacy-peer-deps` is needed because one of Expo's optional peers (`react-dom`) has a newer release that wants a newer React than SDK 57 ships. It also stops npm from installing optional peers this app doesn't use (Reanimated, Gesture Handler).
 
 If `npx expo install` or the dev server fail with `ETIMEDOUT` on a slow connection, prefix the command with `NODE_OPTIONS="--network-family-autoselection-attempt-timeout=3000"`.
 
@@ -95,14 +120,17 @@ The `android/` folder is generated (`expo prebuild`) and not committed. Release 
    CLIRT_UPLOAD_KEY_PASSWORD=<key password>
    ```
 
-3. Generate the native project and build. This needs JDK 17–21; Android Studio's bundled JBR works, and so does the Android SDK in `~/Android/Sdk`.
+3. Generate the native project and build. Bump `version` and `android.versionCode` in `app.json` first, so the APK installs over the previous one. This needs JDK 17–21; Android Studio's bundled JBR works, and so does the Android SDK in `~/Android/Sdk`.
 
    ```sh
    export JAVA_HOME=/opt/android-studio/jbr ANDROID_HOME=$HOME/Android/Sdk
    npx expo prebuild -p android
-   cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a
+   cd android && ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --max-workers=2 \
+     "-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=768m" -Pkotlin.compiler.execution.strategy=in-process
    # → android/app/build/outputs/apk/release/app-release.apk
    ```
+
+   The extra flags keep the build inside about 8 GB of RAM (see troubleshooting below). Run `prebuild` again after changing `app.json` or adding a native module; it regenerates `android/`, so the next build starts from scratch.
 
    Drop `-PreactNativeArchitectures=arm64-v8a` to build for every ABI. That gives a bigger APK and a slower build.
 
@@ -114,6 +142,13 @@ The `android/` folder is generated (`expo prebuild`) and not committed. Release 
 
 If the properties are missing, release builds fall back to the debug key and Gradle prints a warning.
 
+5. Publish: copy the APK to the download folder and attach it to a GitHub release.
+
+   ```sh
+   cp android/app/build/outputs/apk/release/app-release.apk ../clirt-mobile-dist/clirt.apk
+   gh release create v1.1.0 ../clirt-mobile-dist/clirt.apk --title "Clirt for Android 1.1.0" --notes "…"
+   ```
+
 ### Build troubleshooting
 
 - **Gradle daemon "disappeared unexpectedly"** (the Linux OOM killer on a machine with about 8 GB of RAM). Lower Gradle's heap, compile Kotlin in-process, and cap the workers:
@@ -122,6 +157,8 @@ If the properties are missing, release builds fall back to the debug key and Gra
   ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --max-workers=2 \
     "-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=768m" -Pkotlin.compiler.execution.strategy=in-process
   ```
+
+  The JS bundling step (`createBundleReleaseJsAndAssets`) runs one Metro worker per CPU core next to Gradle. Set `METRO_MAX_WORKERS=2` in the environment to cap it (read by `metro.config.js`); if the daemon still dies, also use `--max-workers=1`. Close Docker Desktop or other VMs during the build if you can.
 
   The native C++ step runs one compiler job per CPU core. To cap it, wrap the SDK's `cmake/<version>/bin/ninja` in a script that runs the original binary with `-j2`.
 

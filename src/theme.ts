@@ -10,7 +10,9 @@ export const colors = {
 	ink: '#12131a',
 	slate: '#545a70',
 	leaf: '#1e7a55',
+	leafSoft: '#dcf1e7',
 	alert: '#c2352b',
+	alertSoft: '#fbe3e0',
 	white: '#ffffff'
 } as const;
 

@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { useMemo, useState } from 'react';
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Logo, Spec } from '../../components/ui';
+import { ErrorState, Logo, Skeleton, Spec } from '../../components/ui';
 import { useCatalog } from '../../lib/catalog';
 import { ShirtSvg } from '../../lib/svg';
 import { formatNaira } from '../../shared/money';
@@ -15,6 +15,7 @@ const NECK = { round: 'Round neck', v: 'V-neck', collar: 'Collar' } as const;
 export default function Shop() {
 	const { catalog, error, reload } = useCatalog();
 	const { width } = useWindowDimensions();
+	const [pulling, setPulling] = useState(false);
 	const cardWidth = (width - 16 * 2 - 12) / 2;
 
 	const plainShirts = useMemo(
@@ -36,6 +37,17 @@ export default function Shop() {
 				numColumns={2}
 				columnWrapperStyle={{ gap: 12 }}
 				contentContainerStyle={{ padding: 16, gap: 12 }}
+				refreshControl={
+					<RefreshControl
+						refreshing={pulling}
+						colors={[colors.indigo]}
+						onRefresh={async () => {
+							setPulling(true);
+							await reload();
+							setPulling(false);
+						}}
+					/>
+				}
 				ListHeaderComponent={
 					<View style={{ marginBottom: 8 }}>
 						<Logo />
@@ -49,12 +61,20 @@ export default function Shop() {
 				}
 				ListEmptyComponent={
 					error ? (
-						<View style={{ gap: 12, paddingTop: 24 }}>
-							<Text style={s.lead}>{error}</Text>
-							<Button title="Try again" variant="secondary" onPress={reload} />
-						</View>
+						<ErrorState message={error} onRetry={reload} />
 					) : (
-						<ActivityIndicator color={colors.indigo} style={{ marginTop: 48 }} />
+						<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+							{[0, 1, 2, 3].map((i) => (
+								<View key={i} style={[s.card, { width: cardWidth }]}>
+									<Skeleton style={{ height: cardWidth * 1.1, borderRadius: 0 }} />
+									<View style={{ padding: 12, gap: 8 }}>
+										<Skeleton style={{ width: '80%', height: 16 }} />
+										<Skeleton style={{ width: '60%', height: 12 }} />
+										<Skeleton style={{ width: '40%', height: 16 }} />
+									</View>
+								</View>
+							))}
+						</View>
 					)
 				}
 				renderItem={({ item }) => (

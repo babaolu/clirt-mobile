@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Card, Spec } from '../../components/ui';
+import { Button, Card, ErrorState, Skeleton, Spec } from '../../components/ui';
 import { ApiError } from '../../lib/api';
 import { useCart } from '../../lib/cart';
 import { ShirtSvg } from '../../lib/svg';
@@ -55,15 +55,33 @@ export default function CartScreen() {
 						}}
 					/>
 				}
-				ListHeaderComponent={<Text style={s.title}>Your cart</Text>}
+				ListHeaderComponent={
+					<View>
+						<Text style={s.title}>Your cart</Text>
+						{cart && error && <Text style={[s.problem, { marginBottom: 4 }]}>{error}</Text>}
+					</View>
+				}
 				ListEmptyComponent={
-					cart || error ? (
+					!cart && error ? (
+						<ErrorState message={error} onRetry={refresh} />
+					) : cart ? (
 						<Card style={{ gap: 14, alignItems: 'flex-start' }}>
-							<Text style={s.muted}>{error ?? 'Your cart is empty.'}</Text>
-							<Button title={error ? 'Try again' : 'Start designing'} onPress={() => (error ? refresh() : router.navigate('/'))} />
+							<Text style={s.muted}>Your cart is empty.</Text>
+							<Button title="Start designing" onPress={() => router.navigate('/')} />
 						</Card>
 					) : loading ? (
-						<Text style={s.muted}>Loading your cart…</Text>
+						<View style={{ gap: 12 }}>
+							{[0, 1].map((i) => (
+								<Card key={i} style={[s.row, { gap: 12 }]}>
+									<Skeleton style={{ width: 92, height: 100, borderRadius: 12 }} />
+									<View style={{ flex: 1, gap: 8 }}>
+										<Skeleton style={{ width: '70%', height: 18 }} />
+										<Skeleton style={{ width: '50%', height: 12 }} />
+										<Skeleton style={{ width: '80%', height: 12 }} />
+									</View>
+								</Card>
+							))}
+						</View>
 					) : null
 				}
 				renderItem={({ item }) => {
@@ -117,7 +135,9 @@ export default function CartScreen() {
 								<Text style={s.totalLabel}>Subtotal</Text>
 								<Text style={s.totalLabel}>{formatNaira(cart?.subtotalKobo ?? 0)}</Text>
 							</View>
-							<Text style={[s.muted, { fontSize: 12 }]}>Check out on clirt-delta.vercel.app. You pay on delivery.</Text>
+							<Text style={[s.muted, { fontSize: 12 }]}>Pay on delivery. No payment is taken in the app.</Text>
+							{items.some((i) => i.problem) && <Text style={s.problem}>Remove unavailable items to check out.</Text>}
+							<Button title="Checkout" disabled={items.some((i) => i.problem)} onPress={() => router.push('/checkout')} style={{ marginTop: 6 }} />
 						</Card>
 					) : null
 				}

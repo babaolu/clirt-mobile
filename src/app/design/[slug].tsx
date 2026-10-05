@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, ToastAndroid, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, ToastAndroid, View, useWindowDimensions } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgXml } from 'react-native-svg';
-import { Button, Card, Chip, Spec, Swatch } from '../../components/ui';
+import { Button, Card, Chip, Input, Spec, Swatch } from '../../components/ui';
 import { ApiError } from '../../lib/api';
 import { useCart } from '../../lib/cart';
 import { useCatalog } from '../../lib/catalog';
@@ -200,7 +200,7 @@ export default function Design() {
 										<Text style={s.label}>Your text</Text>
 										<Text style={s.count}>{text.length}/40</Text>
 									</View>
-									<TextInput value={text} onChangeText={setText} maxLength={40} style={s.input} placeholder="Your text" placeholderTextColor={colors.slate} />
+									<Input value={text} onChangeText={setText} maxLength={40} containerStyle={{ marginTop: 6 }} placeholder="Your text" accessibilityLabel="Your text" />
 								</View>
 								<Row label="Font" wrap>
 									{(Object.keys(FONTS) as FontKey[]).map((key) => (
@@ -320,7 +320,6 @@ const s = StyleSheet.create({
 	count: { fontFamily: fonts.mono, fontSize: 12, color: colors.slate },
 	muted: { fontFamily: fonts.body, fontSize: 13, color: colors.slate },
 	link: { fontFamily: fonts.body, fontWeight: '600', fontSize: 14, color: colors.slate },
-	input: { marginTop: 6, borderWidth: 1, borderColor: colors.mist, borderRadius: 10, backgroundColor: colors.white, paddingHorizontal: 12, paddingVertical: 10, fontFamily: fonts.body, fontSize: 16, color: colors.ink },
 	tabs: { flexDirection: 'row', backgroundColor: colors.fog, borderRadius: 10, padding: 3 },
 	tab: { paddingVertical: 6, paddingHorizontal: 16, borderRadius: 8 },
 	tabOn: { backgroundColor: colors.white },
