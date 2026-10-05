@@ -114,6 +114,26 @@ The `android/` folder is generated (`expo prebuild`) and not committed. Release 
 
 If the properties are missing, release builds fall back to the debug key and Gradle prints a warning.
 
+### Build troubleshooting
+
+- **Gradle daemon "disappeared unexpectedly"** (the Linux OOM killer on a machine with about 8 GB of RAM). Lower Gradle's heap, compile Kotlin in-process, and cap the workers:
+
+  ```sh
+  ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --max-workers=2 \
+    "-Dorg.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=768m" -Pkotlin.compiler.execution.strategy=in-process
+  ```
+
+  The native C++ step runs one compiler job per CPU core. To cap it, wrap the SDK's `cmake/<version>/bin/ninja` in a script that runs the original binary with `-j2`.
+
+- **Downloads fail with `Tag mismatch` / `bad_record_mac`** (TLS errors on a flaky connection). Force TLS 1.2 and retry; Gradle keeps what it has already downloaded:
+
+  ```sh
+  export GRADLE_OPTS="-Dhttps.protocols=TLSv1.2 -Djdk.tls.client.protocols=TLSv1.2"
+  ./gradlew assembleRelease ... -Dorg.gradle.internal.repository.max.retries=8
+  ```
+
+  Also add `-Dhttps.protocols=TLSv1.2 -Djdk.tls.client.protocols=TLSv1.2` to `org.gradle.jvmargs`.
+
 ## Licences
 
 The bundled fonts (Montserrat, Playfair Display, Pacifico, Bungee, Space Mono, Oswald, Bricolage Grotesque, Instrument Sans) are under the SIL Open Font License, via Fontsource.
