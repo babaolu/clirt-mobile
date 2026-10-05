@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, ToastAndroid, View, useWindowDimensions } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgXml } from 'react-native-svg';
 import { Button, Card, Chip, Spec, Swatch } from '../../components/ui';
 import { ApiError } from '../../lib/api';
@@ -52,6 +53,7 @@ export default function Design() {
 	const { catalog } = useCatalog();
 	const { add } = useCart();
 	const { width } = useWindowDimensions();
+	const insets = useSafeAreaInsets();
 
 	const [styleSlug, setStyleSlug] = useState(params.slug);
 	const [shirtColor, setShirtColor] = useState<ShirtColor>('white');
@@ -135,7 +137,7 @@ export default function Design() {
 	return (
 		<View style={{ flex: 1, backgroundColor: colors.paper }}>
 			<Stack.Screen options={{ title: style.name }} />
-			<ScrollView stickyHeaderIndices={[0]} contentContainerStyle={{ paddingBottom: 120 }} keyboardShouldPersistTaps="handled">
+			<ScrollView stickyHeaderIndices={[0]} contentContainerStyle={{ paddingBottom: 120 + insets.bottom }} keyboardShouldPersistTaps="handled">
 				{/* Live preview, kept visible while scrolling the controls */}
 				<View style={s.previewWrap}>
 					<View style={s.plate}>
@@ -266,7 +268,7 @@ export default function Design() {
 				</View>
 			</ScrollView>
 
-			<View style={s.bar}>
+			<View style={[s.bar, { paddingBottom: 12 + insets.bottom }]}>
 				{error && <Text style={s.error}>{error}</Text>}
 				<View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
 					<View style={{ flex: 1 }}>

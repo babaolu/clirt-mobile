@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { AppState } from 'react-native';
-import Pusher from 'pusher-js/react-native';
+import PusherModule from 'pusher-js/react-native';
 import { API_BASE, PUSHER_CLUSTER, PUSHER_KEY } from '../config';
 import { api } from './api';
 import { authClient } from './auth';
@@ -21,6 +21,10 @@ type CartState = {
 };
 
 const CartContext = createContext<CartState | null>(null);
+
+// pusher-js 8's React Native bundle sets `module.exports.Pusher` (no default export), although its typings
+// declare a default; reading `.Pusher` keeps `new Pusher()` from throwing "cannot be used as a constructor".
+const Pusher = (PusherModule as unknown as { Pusher?: typeof PusherModule }).Pusher ?? PusherModule;
 
 /**
  * Cart state for the signed-in user, kept in sync live:
@@ -77,11 +81,11 @@ export function CartProvider({ userId, children }: { userId: string | null; chil
 						const res = await fetch(`${API_BASE}/api/v1/realtime/auth`, {
 							method: 'POST',
 							headers: {
-								'Content-Type': 'application/x-www-form-urlencoded',
+								'Content-Type': 'application/json',
 								Accept: 'application/json',
 								...(cookie ? { Cookie: cookie } : {})
 							},
-							body: `socket_id=${encodeURIComponent(socketId)}&channel_name=${encodeURIComponent(channelName)}`,
+							body: JSON.stringify({ socket_id: socketId, channel_name: channelName }),
 							credentials: 'omit'
 						});
 						if (!res.ok) throw new Error(`realtime auth failed (${res.status})`);

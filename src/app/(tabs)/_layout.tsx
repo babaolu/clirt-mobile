@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import type { ColorValue } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Path, Svg } from 'react-native-svg';
 import { useCart } from '../../lib/cart';
 import { colors, fonts } from '../../theme';
@@ -19,13 +20,15 @@ const AccountIcon = icon('M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z M4 21a8 8 0 0 1 16
 
 export default function TabsLayout() {
 	const { itemCount } = useCart();
+	// Edge-to-edge: the bar has a fixed height, so add the system navigation bar's inset to it.
+	const { bottom } = useSafeAreaInsets();
 	return (
 		<Tabs
 			screenOptions={{
 				headerShown: false,
 				tabBarActiveTintColor: colors.indigo,
 				tabBarInactiveTintColor: colors.slate,
-				tabBarStyle: { backgroundColor: colors.white, borderTopColor: colors.mist, height: 64, paddingTop: 6 },
+				tabBarStyle: { backgroundColor: colors.white, borderTopColor: colors.mist, height: 64 + bottom, paddingTop: 6, paddingBottom: bottom },
 				tabBarLabelStyle: { fontFamily: fonts.body, fontWeight: '600', fontSize: 12 },
 				tabBarBadgeStyle: { backgroundColor: colors.marigold, color: colors.ink, fontFamily: fonts.mono, fontWeight: '700' }
 			}}
